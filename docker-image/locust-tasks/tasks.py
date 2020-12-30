@@ -22,21 +22,21 @@ from locust import HttpLocust, TaskSet, task
 
 
 class MetricsTaskSet(TaskSet):
-    _deviceid = None
+    itemId = 47967
+    userId = 'lady2810'
+    
+    @task(10)
+    def load_js_file(self):
+        self.client.get('/js/myfit-latest.js')
 
-    def on_start(self):
-        self._deviceid = str(uuid.uuid4())
+    @task(8)
+    def get_compare_list(self):
+        self.client.get("/modal/v3/mysize/attrangs?itemId={0}&userId{1}".format(self.itemId, self.userId))
 
     @task(1)
-    def login(self):
-        self.client.post(
-            '/login', {"deviceid": self._deviceid})
-
-    @task(999)
-    def post_metrics(self):
-        self.client.post(
-            "/metrics", {"deviceid": self._deviceid, "timestamp": datetime.now()})
-
+    def load_purchase_list(self):
+        self.client.get("/modal/v3/loadOrders?brand=${0}&userId=${1}".format('ATTRANGS', self.userId))
+        
 
 class MetricsLocust(HttpLocust):
     task_set = MetricsTaskSet
